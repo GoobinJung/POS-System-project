@@ -2,7 +2,9 @@ package posPd;
 
 import java.math.BigDecimal;
 
-public class Check extends AuthorizedPayment {
+public class Check extends AuthorizedPayment implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
 	private String routingNumber;
 	public String getRoutingNumber() {
@@ -33,16 +35,19 @@ public class Check extends AuthorizedPayment {
 	}
 
 	public Check() {
-	    
+
 	}
 
 	public Check(String amount, String accountNumber) {
-	    setAmount(new BigDecimal(amount)); // 
+	    setAmount(new BigDecimal(amount));
+        setAmtTendered(new BigDecimal(amount)); //
 	    this.accountNumber = accountNumber;
 	}
 
 	public Boolean isAuthorized() {
-	    return true; 
+	    return getAmtTendered().signum() > 0 && routingNumber != null
+            && routingNumber.matches("[0-9]{9}") && accountNumber != null
+            && accountNumber.matches("[0-9]{4,20}") && checkNumber != null && checkNumber.matches("[0-9]+");
 	}
 
 	public String toString() {

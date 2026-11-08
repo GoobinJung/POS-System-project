@@ -1,14 +1,7 @@
 package posPd;
-
-public abstract class AuthorizedPayment extends Payment { 
-
-    private String authorizationCode;
-
-    public Boolean isAuthorized() {
-        return false; 
-    }
-
-    public Boolean countsAsCash() {
-        return false;
-    }
+/** Local demo validation only; no payment gateway is contacted. */
+public abstract class AuthorizedPayment extends Payment {
+    private static final long serialVersionUID = 1L;
+    public abstract Boolean isAuthorized();
+    @Override public Boolean countsAsCash() { return false; }
 }

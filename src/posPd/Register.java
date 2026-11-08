@@ -1,18 +1,20 @@
 package posPd;
 import java.util.*;
 
-public class Register {
+public class Register implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
 	private Collection<Session> session;
-	
+
 	private String number;
-	
+
 	public Register() {
-	    
+
 	    session = new ArrayList<Session>();
 	}
 
-	
+
 
 
 	public Register(Store aStore, String number) {
@@ -32,10 +34,10 @@ public class Register {
 	public String getNumber() {
 	    return this.number;
 	}
-	
+
 	public void addSession(Session s) {
-	    session.add(s);
+	    if (!session.contains(s)) session.add(s);
 	}
-	
-	
+
+
 }

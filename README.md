@@ -1,67 +1,51 @@
 # Point of Sale System
 
-A Java desktop application that models a retail checkout workflow, from cashier login and item entry to payment handling and session summaries. Built with Swing, the project separates the user interface, business objects, and CSV data loading into distinct packages.
+A Java Swing desktop application for a small retail checkout workflow. The application includes cashier sessions, UPC-based sales, cash/check/credit payment simulation, store maintenance, sales reports, and local persistence.
+
+The code is organized into separate presentation, domain, and data-management packages. It uses only the Java standard library.
 
 ## Features
 
-- **Store administration:** Maintain the store name, cashiers, registers, items, UPCs, prices, tax categories, and tax rates through dedicated management screens.
-- **Cashier sessions:** Select a cashier and register, validate a demo password, and record the starting cash amount.
-- **UPC-based checkout:** Enter a product UPC and quantity to add sale line items, with feedback when an item cannot be found.
-- **Sale calculations:** Display subtotal, tax, total, amount tendered, and change using `BigDecimal` arithmetic. A tax-free option is available.
-- **Payment entry:** Record cash, check, and credit payment details through separate Swing panels.
-- **Session summaries:** Display the cashier, register, number of recorded sales, total sales, and a cash difference field.
-- **Sample data import:** Load store configuration, products, cashiers, registers, and historical transaction records from `StoreData.csv`.
+- **Checkout:** Enter a UPC and quantity, remove items, apply a tax exemption, and view subtotal, tax, balance due, and change.
+- **Payments:** Accept exact cash amounts, calculate change, and combine payments. Demo check and credit entries validate their required fields; non-cash overpayment is rejected.
+- **Sales integrity:** Record each sale once, require full payment before completion, and preserve the unit price and tax rate captured when each line was added.
+- **Pricing:** Select the latest applicable regular price and tax rate. Active promotions apply within inclusive start/end dates when cheaper than the regular price.
+- **Sessions:** Record starting cash, resume an open session after restarting, and reconcile counted cash against starting cash plus net cash received from completed sales.
+- **Maintenance:** Manage cashiers, registers, items, UPCs, regular/promotional prices, tax categories, and dated tax rates.
+- **Reports:** View daily sales, sales by cashier, and item quantities/revenue for a selected date. Export the report to CSV.
+- **Persistence:** Automatically save maintenance changes, session starts/ends, and completed sales. Keep a previous-save backup and provide a manual **File → Save** action.
+- **Input handling:** Display validation messages for invalid quantities, amounts, dates, duplicate identifiers, and missing selections.
+- **Passwords:** Store cashier passwords as salted PBKDF2-HMAC-SHA256 hashes in the local snapshot.
 
-This is an educational POS implementation. Payment entry is simulated, and the application does not connect to a payment processor.
+## Requirements
 
-## Technology
-
-| Component | Implementation |
+| Component | Requirement |
 |---|---|
-| Language | Java |
-| Project configuration | JavaSE-21 |
-| Desktop interface | Java Swing and AWT |
-| Monetary calculations | `java.math.BigDecimal` |
-| Data loading | CSV with Java file I/O |
-| Development environment | Eclipse IDE |
-| External dependencies | None |
+| Java | JDK 21 to match the Eclipse project configuration |
+| IDE | Eclipse with Java development support, or a terminal |
+| Dependencies | Java standard library only |
+| Interface | Swing and AWT |
 
-## Project Structure
+The source also compiles and the local regression suite has been exercised with JDK 17. The GitHub workflow targets JDK 21.
 
-| Path | Responsibility |
-|---|---|
-| [`src/posUi/`](src/posUi/) | Swing application frame, checkout screens, payment panels, and maintenance forms |
-| [`src/posPd/`](src/posPd/) | Domain objects for stores, items, sales, payments, taxes, cashiers, and sessions |
-| [`src/posDm/StoreDm.java`](src/posDm/StoreDm.java) | CSV import and object construction |
-| [`src/posTest/StoreTest.java`](src/posTest/StoreTest.java) | Console inspection and acceptance-test demonstration methods |
-| [`StoreData.csv`](StoreData.csv) | Included store and transaction data |
+## Run in Eclipse
 
-The domain model uses inheritance for payment types (`Cash`, `Check`, and `Credit`) and pricing (`Price` and `PromoPrice`). Java collections maintain the relationships between stores, cashiers, registers, items, sessions, and sales.
-
-## Getting Started
-
-### Requirements
-
-- JDK 21, matching the Eclipse project configuration
-- Eclipse IDE with Java development support, or a terminal
-- Git to clone the repository, or a downloaded ZIP of the source
-
-### Run in Eclipse
-
-1. Clone the repository:
+1. Clone the repository or download and extract its ZIP:
 
    ```bash
    git clone https://github.com/GoobinJung/POS-System-project.git
    ```
 
-2. In Eclipse, select **File → Import → General → Existing Projects into Workspace**.
-3. Select the cloned repository as the root directory and import the top-level **Project 2 POS SYSTEM** project. If Eclipse also lists the nested `src/posPd` project, leave it unselected.
-4. Confirm that the project's **JRE System Library** uses JavaSE-21.
-5. Open `src/posUi/PosFrame.java`, then select **Run As → Java Application**.
+2. Select **File → Import → General → Existing Projects into Workspace**.
+3. Select the repository directory and import the top-level **Project 2 POS SYSTEM** project. Leave the nested `src/posPd` project unselected if Eclipse lists it separately.
+4. Ensure **JRE System Library** uses JavaSE-21.
+5. Open **`src/posUi/PosFrame.java`** and select **Run As → Java Application**.
 
-**Run with the repository root as the working directory.** The application reads `StoreData.csv` using a relative path. If the import fails, check **Run Configurations → Arguments → Working directory**.
+Use the repository root as the working directory so the application can locate `StoreData.csv`. In Eclipse this is under **Run Configurations → Arguments → Working directory**.
 
-### Run from PowerShell
+`PosFrame` starts the desktop application. `PosStart` is an earlier console demonstration.
+
+## Run from PowerShell
 
 From the repository root:
 
@@ -69,24 +53,22 @@ From the repository root:
 $sources = Get-ChildItem -Path src -Recurse -Filter *.java |
     ForEach-Object { $_.FullName }
 
-javac --release 21 -encoding UTF-8 -d out $sources
+javac -encoding UTF-8 -d out $sources
 java -cp out posUi.PosFrame
 ```
 
-The desktop entry point is **`posUi.PosFrame`**. `posUi.PosStart` runs an earlier console demonstration.
+## Demo Walkthrough
 
-## Try the Checkout Workflow
+1. Choose **POS → Login / Return to checkout**.
+2. Select a demo cashier:
 
-1. Launch the application and select **POS → Login**.
-2. Select one of the included demo cashiers:
-
-   | Cashier number | Name | Password |
+   | Cashier | Name | Password |
    |---|---|---|
    | 1 | David | `password1` |
    | 2 | Sally | `password2` |
 
-3. Select register **1** or **2**, enter a numeric starting cash amount such as `100.00`, and log in.
-4. Enter a quantity, then type a product UPC in the **Item** field and press **Enter**:
+3. Select register **1** or **2**, enter starting cash such as `100.00`, and log in.
+4. Enter a quantity and a product UPC, then press **Enter** in the UPC field or choose **Add item**.
 
    | UPC | Product |
    |---|---|
@@ -95,37 +77,68 @@ The desktop entry point is **`posUi.PosFrame`**. `posUi.PosStart` runs an earlie
    | `33333333333` | Coke |
    | `44444444444` | Dr. Pepper |
 
-5. Select **Payment → Cash**, enter an amount greater than the sale total, and click **Save**.
-6. Select **Payment Complete**, then **Complete Sale** to begin another sale.
+5. Select **Payment → Cash**. The exact balance is prefilled; use that amount or a larger cash amount and select **Save**.
+6. Select **Payment Complete**, then **Complete Sale**. Only **Complete Sale** records the transaction.
+7. After completing or cancelling the current sale, choose **End Session**, enter the counted cash, and finish reconciliation.
+8. Use **Reports** to review sales and export CSV files.
 
-For the current implementation, use an amount **greater than** the total during the demo: the payment completion check uses `>` rather than `>=`.
+Check payments use a fictional nine-digit routing number, a fictional account number, and a check number. Credit payments take a card type, **four demo digits only**, and a non-expired `YYYY-MM-DD` expiration date. No processor or bank is contacted.
 
-The sample CSV contains promotional price records dated in 2025. Checkout currently selects the first price in the item's sorted price collection, so the presence of a promotion record does not imply automatic promotion selection.
+## Maintenance Behavior
 
-## Console Inspection
+- End the active cashier session before editing store data.
+- Identifiers are fixed after creation. Names and other details can be edited.
+- Leave an existing cashier's password field blank to keep the current password.
+- New items need at least one UPC and price before they can be saved.
+- New tax categories need at least one dated rate.
+- Saved UPC, price, and tax-rate edits take effect immediately for existing records. Checkout line items retain their captured values.
+- Cashiers/registers with recorded sessions and tax categories assigned to items cannot be deleted.
 
-After compiling, run:
+## Data and Recovery
+
+On first launch, the application imports `StoreData.csv`. Subsequent launches load `StoreState.ser` from the working directory. Local snapshots and generated build files are excluded from Git.
+
+Saves write a temporary file and replace the snapshot atomically where the filesystem supports it. The previous snapshot is kept as `StoreState.ser.bak`. If loading fails, the application reports the error and does not silently replace the saved data with the sample store.
+
+To restore a backup, close the application, keep a copy of the failed snapshot, and copy `StoreState.ser.bak` to `StoreState.ser`. To start over with sample data, move both snapshot files aside before launching.
+
+Completed sales and maintenance changes are saved. An unfinished sale is discarded when closing the application after confirmation; its open cashier session can be resumed after login.
+
+The original CSV has no transaction timestamps, so imported sales use the import time. Its recorded payment amounts are preserved even where they differ from the recomputed sale totals. Reports show sale totals and recorded payments separately in the daily report. Sample promotions are dated in 2025.
+
+This is a **single-user educational application**, not a production payment system. Use fictional data. Local snapshots are not encrypted, and real payment processing, production access controls, refunds, and multi-terminal synchronization are outside its scope.
+
+## Project Structure
+
+| Path | Responsibility |
+|---|---|
+| `src/posUi/` | Application frame, maintenance forms, checkout, reconciliation, and report screens |
+| `src/posPd/` | Stores, cashiers, registers, items, pricing, taxes, sales, payments, sessions, and report calculations |
+| `src/posDm/StoreDm.java` | Seed CSV import, filtered snapshot loading, atomic saves, and backups |
+| `src/posDm/CsvExport.java` | UTF-8 report export with CSV quoting |
+| `src/posTest/RegressionTest.java` | Automated domain, import, persistence, and export checks |
+| `src/posUi/WorkflowTest.java` | Swing panel rendering and end-to-end form/checkout checks |
+| `src/posTest/StoreTest.java` | Original console inspection utility |
+| `test.ps1` | Compile and run both automated suites |
+| `.github/workflows/java.yml` | JDK 21 build and regression checks |
+
+## Validation
+
+Run both suites from PowerShell:
 
 ```powershell
+.\test.ps1
+```
+
+Or, after compiling:
+
+```powershell
+java -cp out posTest.RegressionTest
+java -cp out posUi.WorkflowTest
 java -cp out posTest.StoreTest
 ```
 
-This entry point imports `StoreData.csv` and prints store, cashier, register, item, and session information. It is a manual inspection utility, rather than an automated assertion-based test suite.
+The automated checks cover exact and mixed payments, cash change, duplicate-sale prevention, invalid inputs, promotion boundaries, tax-rate selection, historical amount snapshots, report totals, password verification, CSV import/export, snapshot recovery, maintenance forms, and checkout persistence.
 
-**Known issue:** With the included data, this utility prints the store, cashiers, registers, and items, then throws a `NullPointerException` while printing sessions. Imported check and credit payments do not initialize the amount tendered, which is used by `Sale.calcAmtTendered()`.
+Swing workflow checks run on the event dispatch thread without displaying the frame. In headless environments they render the component panels and skip the frame workflow; the GitHub workflow uses a virtual display to run the full flow.
 
-## Current Scope and Limitations
-
-- **Persistence:** CSV import is implemented. Changes made through the interface remain in memory and are not written back to disk.
-- **Payments and authentication:** Check and credit authorization methods are stubs that return `true`. Cashier passwords are stored as plain text for the demo.
-- **Reporting:** The Reports menu and report panel classes are placeholders. Cash reconciliation is only partially connected to the session summary screen.
-- **Transaction accounting:** Imported sale line items and the payment-completion/sale-completion workflow can add duplicate entries, affecting session totals and counts.
-- **Validation and date selection:** Numeric/date input validation and selection of the applicable price or tax rate need further work.
-
-## Development Opportunities
-
-- Add persistent storage for configuration and completed transactions.
-- Add automated tests for tax, pricing, payments, and session accounting.
-- Correct exact-payment handling, duplicate additions, and date-based price/rate selection.
-- Complete reporting and cash reconciliation.
-- Improve form validation, password handling, and interface layout.

@@ -2,7 +2,9 @@ package posPd;
 
 import java.math.BigDecimal;
 
-public class CashDrawer {
+public class CashDrawer implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
 	private BigDecimal cashAmount;
 	private int position;
@@ -12,20 +14,23 @@ public class CashDrawer {
 	}
 
 	public void removeCash(BigDecimal cash) {
-	    cashAmount = cashAmount.subtract(cash);
+        BigDecimal value = Money.amount(cash);
+        if (value.compareTo(cashAmount) > 0) throw new IllegalArgumentException("Not enough cash in the drawer.");
+	    cashAmount = cashAmount.subtract(value);
 	}
 
 	public void addCash(BigDecimal cash) {
-	    cashAmount = cashAmount.add(cash);
+	    cashAmount = cashAmount.add(Money.amount(cash));
 	}
 
 	public String toString() {
 	    return "CashDrawer: Amount=" + cashAmount;
 	}
-	
+
 	public BigDecimal getCashAmount() {
 	    return cashAmount;
 	}
-	
-	
+
+
 }
+

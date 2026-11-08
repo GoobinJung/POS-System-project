@@ -1,6 +1,8 @@
 package posPd;
 
-public class Person {
+public class Person implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
 	private Cashier cashier;
 	private String name;
@@ -12,7 +14,7 @@ public class Person {
 	private String sSN;
 
 	public Person() {
-	     
+
 	}
 
 	public Person(String name, String address, String city, String state, String zip, String phone, String ssn) {
@@ -24,7 +26,7 @@ public class Person {
 		setPhone(phone);
 		setSSN(ssn);
 	}
-	
+
 	public void setSSN(String ssn) {
 	    this.sSN = ssn;
 	}
@@ -56,39 +58,39 @@ public class Person {
 	public Cashier getCashier() {
 	    return this.cashier;
 	}
-	
+
 	public void setCashier(Cashier cashier) {
 	    this.cashier = cashier;
 	}
-	
+
 	public String getName() {
 	    return this.name;
 	}
-	
-	public String getAddress() { 
+
+	public String getAddress() {
 	    return this.address;
 	}
-	
+
 	public String getCity() {
 	    return this.city;
 	}
-	
+
 	public String getState() {
 	    return this.state;
 	}
-	
+
 	public String getZip() {
 	    return this.zip;
 	}
-	
+
 	public String getPhone() {
 	    return this.phone;
 	}
-	
+
 	public String getSSN() {
 	    return this.sSN;
 	}
-	
+
 	public String toString() {
 	    return name + " " + address + " " + city + ", " + state + " " + zip + " " + phone + " " + sSN;
 	}
