@@ -1,16 +1,8 @@
 package posUi;
+import posPd.Store;
 
-import javax.swing.JPanel;
-
-public class ItemReportPanel extends JPanel {
-
+public class ItemReportPanel extends ReportPanel {
     private static final long serialVersionUID = 1L;
-
-    /**
-     * Create the panel.
-     */
-    public ItemReportPanel() {
-
-    }
-
+    public ItemReportPanel(Store store) { super(store, 2, "Item sales"); }
 }
+

@@ -1,0 +1,7 @@
+/out/
+/bin/
+/StoreState.ser
+/StoreState.ser.bak
+/pos-state-*.tmp
+/sales-report-*.csv
+

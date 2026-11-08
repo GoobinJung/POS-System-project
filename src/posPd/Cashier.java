@@ -3,7 +3,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
-public class Cashier {
+public class Cashier implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
 	private Person person;
 	private ArrayList<Session> sessions;
@@ -32,44 +34,44 @@ public class Cashier {
 	}
 
 	public void addSession(Session session) {
-		getSessions().add(session);
+		if (!getSessions().contains(session)) getSessions().add(session);
 	}
-	
+
 	public String testString() {
 	    return getNumber() + " " + getPerson().toString();
 	}
-	
-	public Person getPerson() { 
+
+	public Person getPerson() {
 	    return this.person;
 	}
 
 	public String toString() {
-	    return getNumber() + " - " + getPerson().getName(); 
+	    return getNumber() + " - " + getPerson().getName();
 	}
-	
+
 	public BigDecimal calculateTotalDifferenceForDate(LocalDate aLocalDate) {
 	    BigDecimal totalDiff = new BigDecimal("0.00");
-	    
+
 	    for (Session session : getSessions()) {
-		if (session.getStartDateTime().toLocalDate().equals(aLocalDate)) {
-		    totalDiff = totalDiff.add(session.calcCashCountDiff()); 
+		if (session.isClosed() && session.getStartDateTime().toLocalDate().equals(aLocalDate)) {
+		    totalDiff = totalDiff.add(session.calcCashCountDiff());
 		}
 	    }
-	    
+
 	    return totalDiff;
 	}
-    
+
 	public ArrayList<Session> getSessions(){
 	    return this.sessions;
 	}
-	
-	
+
+
 	public String getPassword() {
-	    return this.password;
+	    return ""; // Never expose the stored password hash to the editor.
 	}
-	
+
 	public void setPassword(String password) {
-	    this.password = password;
+	    this.password = PasswordHash.create(password);
 	}
 
 	public void removeSession(Session session) {
@@ -77,7 +79,7 @@ public class Cashier {
 	}
 
 	public Boolean isAuthorized(String password) {
-	    return this.password.equals(password);
+	    return PasswordHash.verify(password, this.password);
 	}
 
 	public String getNumber() {

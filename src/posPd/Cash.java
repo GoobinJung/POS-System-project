@@ -1,10 +1,12 @@
 package posPd;
 import java.math.BigDecimal;
 
-public class Cash extends Payment {
+public class Cash extends Payment implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
 	public Cash() {
-	   
+
 	}
 
 	public Cash(String amount, BigDecimal amtTendered) {

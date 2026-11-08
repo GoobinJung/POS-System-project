@@ -1,7 +1,9 @@
 package posPd;
 import java.util.*;
 
-public class Store {
+public class Store implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
 	private TreeMap<String, Item> items;
 	private TreeMap<String, Cashier> cashiers;
@@ -9,7 +11,7 @@ public class Store {
 	private TreeMap<String, UPC> upcs;
 	private TreeMap<String, TaxCategory> taxCategories;
 	private ArrayList<Session> sessions;
-	
+
 
 	private String number;
 	private String name;
@@ -27,15 +29,15 @@ public class Store {
 		this();
 		setName(name);
 	}
-	
+
 
 	public Store(String number, String name) {
 	    this();
 	    setNumber(number);
 	    setName(name);
 	}
-	
-	
+
+
 
 	public String getNumber() {
 	    return number;
@@ -55,9 +57,9 @@ public class Store {
 
 	public void addItem(Item item) {
 	    if(item != null) {
-		getItems().put(item.getNumber(), item);
+		putUnique(items, item.getNumber(), item);
 	    }
-		
+
 	}
 
 	public TreeMap<String, Item> getItems() {
@@ -66,22 +68,33 @@ public class Store {
 
 	public void removeItem(Item item) {
 		items.remove(item.getNumber());
+        upcs.values().removeIf(upc -> upc.getItem() == item);
 	}
 
-	public void addUPC(UPC upc) {
+	private static <T> void putUnique(TreeMap<String, T> map, String key, T value) {
+        if (key == null || key.isBlank()) throw new IllegalArgumentException("Identifier is required.");
+        T existing = map.get(key);
+        if (existing != null && existing != value) throw new IllegalArgumentException("Identifier already exists: " + key);
+        map.entrySet().removeIf(entry -> entry.getValue() == value);
+        map.put(key, value);
+    }
+    public void addUPC(UPC upc) {
 	    if (upc != null) {
-		getUpcs().put(upc.getUpc(), upc);
+		Item existing = findItemForUPC(upc.getUpc());
+        if (existing != null && existing != upc.getItem())
+            throw new IllegalArgumentException("UPC is already assigned to another item.");
+        putUnique(upcs, upc.getUpc(), upc);
 	    }
-		
+
 	}
 
 	public TreeMap<String, UPC> getUpcs() {
-	    
+
 	    return this.upcs;
 	}
-	
+
 	public TreeMap<String, Cashier> getCashiers() {
-	    
+
 	    return this.cashiers;
 	}
 
@@ -91,42 +104,47 @@ public class Store {
 
 	public void addRegister(Register register) {
 	    if (register != null) {
-		registers.put(register.getNumber(), register);
+		putUnique(registers, register.getNumber(), register);
 	    }
 	}
 
 	public void removeRegister(Register register) {
-		registers.remove(register.getNumber());
+		for (Session session : sessions) if (session.getRegister() == register)
+            throw new IllegalArgumentException("Register has recorded sessions.");
+        registers.remove(register.getNumber());
 	}
 
 	public void addCashier(Cashier cashier) {
 	    if (cashier != null) {
-		getCashiers().put(cashier.getNumber(), cashier);
+		putUnique(cashiers, cashier.getNumber(), cashier);
 	    }
 	}
 
 	public void removeCashier(Cashier cashier) {
-		cashiers.remove(cashier.getNumber());
+		if (!cashier.getSessions().isEmpty()) throw new IllegalArgumentException("Cashier has recorded sessions.");
+        cashiers.remove(cashier.getNumber());
 	}
 
 	public void addTaxCategory(TaxCategory taxCategory) {
 	    if (taxCategory != null) {
-		getTaxCategories().put(taxCategory.getCategory(), taxCategory);
+		putUnique(taxCategories, taxCategory.getCategory(), taxCategory);
 	    }
 	}
 
 	public void removeTaxCategory(TaxCategory taxCategory) {
-		taxCategories.remove(taxCategory.getCategory());
+		for (Item item : items.values()) if (item.getTaxCategory() == taxCategory)
+            throw new IllegalArgumentException("Tax category is assigned to an item.");
+        taxCategories.remove(taxCategory.getCategory());
 	}
 
 	public void addSession(Session session) {
 	    if (session != null) {
-		getSessions().add(session);
+		if (!getSessions().contains(session)) getSessions().add(session);
 	    }
 	}
 
 	public ArrayList<Session> getSessions() {
-	    return this.sessions; 
+	    return this.sessions;
 	}
 
 	public void removeSession(Session session) {
@@ -134,7 +152,7 @@ public class Store {
 	}
 
 	public Register findRegisterForNumber(String number) {
-	    if (number.length() > 0) {
+	    if (number != null && !number.isEmpty()) {
 		return getRegisters().get(number);
 	    } else
 		return null;
@@ -153,7 +171,7 @@ public class Store {
 	}
 
 	public Item findItemForNumber(String number) {
-	    if (number.length() > 0) {
+	    if (number != null && !number.isEmpty()) {
 		return getItems().get(number);
 		} else
 		return null;
@@ -164,14 +182,14 @@ public class Store {
 	}
 
 	public TaxCategory findTaxCategoryForCategory(String category) {
-	    if (category.length() > 0) {
+	    if (category != null && !category.isEmpty()) {
 		return taxCategories.get(category);
 	    } else
 		return null;
 	}
-	
+
 	public TreeMap<String, TaxCategory> getTaxCategories() {
-	    return this.taxCategories; 
+	    return this.taxCategories;
 	}
 
 	public String toString() {

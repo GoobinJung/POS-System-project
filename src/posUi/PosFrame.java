@@ -1,139 +1,86 @@
 package posUi;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-
 import posDm.StoreDm;
-import posPd.Store;
-
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import posPd.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 public class PosFrame extends JFrame {
-
     private static final long serialVersionUID = 1L;
-    private JPanel contentPane;
+    private final Store store;
+    private Session activeSession;
+    private Sale activeSale;
 
-    /**
-     * Launch the application.
-     */
     public static void main(String[] args) {
-	EventQueue.invokeLater(new Runnable() {
-	    public void run() {
-		try {
-		    Store store = StoreDm.importStore("StoreData.csv"); 
-		    PosFrame frame = new PosFrame(store);
-		    frame.setVisible(true);
-		} catch (Exception e) {
-		    e.printStackTrace();
-		}
-	    }
-	});
+        EventQueue.invokeLater(() -> {
+            try { new PosFrame(StoreDm.loadStore()).setVisible(true); }
+            catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Cannot open store: " + ex.getMessage()
+                    + "\nNo saved data was overwritten.", "POS startup", JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
-
-    /**
-     * Create the frame.
-     */
     public PosFrame(Store store) {
-	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	setBounds(100, 100, 500, 400);
-	JFrame currentFrame = this;
-	
-	contentPane = new JPanel();
-	contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-	contentPane.setLayout(new BorderLayout(0,0));
-	setContentPane(contentPane);
-	
-	JMenuBar menuBar = new JMenuBar();
-	setJMenuBar(menuBar);
-	
-	JMenu mnNewMenu = new JMenu("Maintain");
-	menuBar.add(mnNewMenu);
-	
-	JMenuItem mntmNewMenuItem = new JMenuItem("Store");
-	mntmNewMenuItem.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    getContentPane().removeAll();
-		    getContentPane().add(new StoreEditPanel(currentFrame, store));
-		    getContentPane().revalidate();
-		    
-		}
-	});
-	mnNewMenu.add(mntmNewMenuItem);
-	
-	JMenuItem mntmNewMenuItem_1 = new JMenuItem("Cashier");
-	mntmNewMenuItem_1.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    getContentPane().removeAll();
-		    getContentPane().add(new CashierListPanel(currentFrame, store));
-		    getContentPane().revalidate();
-		    
-		}
-	});
-	mnNewMenu.add(mntmNewMenuItem_1);
-	
-	JMenuItem mntmNewMenuItem_2 = new JMenuItem("Register");
-	mntmNewMenuItem_2.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    getContentPane().removeAll();
-		    getContentPane().add(new RegisterListPanel(currentFrame, store));
-		    getContentPane().revalidate();
-		}
-	});
-	mnNewMenu.add(mntmNewMenuItem_2);
-	
-	
-	JMenuItem mntmNewMenuItem_3 = new JMenuItem("Items");
-	mntmNewMenuItem_3.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    getContentPane().removeAll();
-		    getContentPane().add(new ItemListPanel(currentFrame, store));
-		    getContentPane().revalidate();
-		}
-	});
-	mnNewMenu.add(mntmNewMenuItem_3);
-	
-	JMenuItem mntmNewMenuItem_4 = new JMenuItem("Tax Categories");
-	mntmNewMenuItem_4.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    getContentPane().removeAll();
-		    getContentPane().add(new TaxCategoryListPanel(currentFrame, store));
-		    getContentPane().revalidate();
-		}
-	});
-	
-	
-	mnNewMenu.add(mntmNewMenuItem_4);
-	
-	JMenu mnNewMenu_1 = new JMenu("POS");
-	menuBar.add(mnNewMenu_1);
-
-	JMenuItem login = new JMenuItem("Login");
-	login.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    getContentPane().removeAll();
-		    getContentPane().add(new LoginPanel(currentFrame, store));
-		    getContentPane().revalidate();
-		}
-	});
-	mnNewMenu_1.add(login);
-	
-	
-	JMenu mnNewMenu_2 = new JMenu("Reports");
-	menuBar.add(mnNewMenu_2);
-
-        getContentPane().removeAll();
-        getContentPane().add(new HomePanel(store));
-	getContentPane().revalidate();
-
+        super("Point of Sale - " + store.getName());
+        this.store = store;
+        setSize(900, 700);
+        setMinimumSize(new Dimension(760, 600));
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        JMenuBar bar = new JMenuBar();
+        JMenu file = new JMenu("File");
+        item(file, "Save", () -> { Ui.save(store); JOptionPane.showMessageDialog(this, "Store saved."); });
+        bar.add(file);
+        JMenu maintain = new JMenu("Maintain");
+        item(maintain, "Store", () -> maintain(new StoreEditPanel(this, store)));
+        item(maintain, "Cashier", () -> maintain(new CashierListPanel(this, store)));
+        item(maintain, "Register", () -> maintain(new RegisterListPanel(this, store)));
+        item(maintain, "Items", () -> maintain(new ItemListPanel(this, store)));
+        item(maintain, "Tax Categories", () -> maintain(new TaxCategoryListPanel(this, store)));
+        bar.add(maintain);
+        JMenu pos = new JMenu("POS");
+        item(pos, "Login / Return to checkout", () -> Ui.show(this, activeSession == null
+            ? new LoginPanel(this, store) : new PosSalePanel(this, store, activeSession, activeSale)));
+        bar.add(pos);
+        JMenu reports = new JMenu("Reports");
+        item(reports, "Daily sales", () -> Ui.show(this, new DailySalesPanel(store)));
+        item(reports, "Cashier sales", () -> Ui.show(this, new CashierReportPanel(store)));
+        item(reports, "Item sales", () -> Ui.show(this, new ItemReportPanel(store)));
+        bar.add(reports);
+        setJMenuBar(bar);
+        addWindowListener(new WindowAdapter() {
+            @Override public void windowClosing(WindowEvent event) {
+                Ui.run(PosFrame.this, () -> {
+                    if (activeSale != null && !activeSale.getSaleLineItems().isEmpty()
+                        && JOptionPane.showConfirmDialog(PosFrame.this,
+                            "Discard the current unfinished sale and close? Completed sales will be saved.",
+                            "Unfinished sale", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
+                    Ui.save(store);
+                    dispose();
+                });
+            }
+        });
+        Ui.show(this, new HomePanel(store));
     }
-
+    private void item(JMenu menu, String label, Ui.Action action) {
+        JMenuItem item = new JMenuItem(label);
+        item.addActionListener(event -> Ui.run(this, action));
+        menu.add(item);
+    }
+    private void maintain(JPanel panel) {
+        if (activeSession != null) throw new IllegalStateException("End the cashier session before editing store data.");
+        Ui.show(this, panel);
+    }
+    void checkout(Session session, Sale sale) {
+        activeSession = session;
+        activeSale = sale;
+        Ui.show(this, new PosSalePanel(this, store, session, sale));
+    }
+    void finishSession() {
+        activeSession = null;
+        activeSale = null;
+        Ui.show(this, new HomePanel(store));
+    }
 }
+

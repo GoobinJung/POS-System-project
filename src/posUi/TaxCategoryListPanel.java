@@ -1,90 +1,25 @@
 package posUi;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-
-import posPd.TaxCategory;
-import posPd.Store;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
+import javax.swing.*;
+import posPd.*;
 
 public class TaxCategoryListPanel extends JPanel {
-
     private static final long serialVersionUID = 1L;
-    DefaultListModel<TaxCategory> listModel;
-    JButton editButton;
-    JButton deleteButton;
-
-    /**
-     * Create the panel.
-     */
-    public TaxCategoryListPanel(JFrame currentFrame, Store store) {
-         setLayout(null);
-    	
-    	
-    	listModel = new DefaultListModel<TaxCategory>();
-    	for(TaxCategory taxcategory : store.getTaxCategories().values()) {
-    	    listModel.addElement(taxcategory);
-    	}
-    	
-    	JList<TaxCategory> list = new JList<TaxCategory>(listModel);
-    	list.addListSelectionListener(new ListSelectionListener() {
-    		public void valueChanged(ListSelectionEvent e) {
-    		editButton.setEnabled(true);
-    		deleteButton.setEnabled(true);
-    		
-    		
-    		}
-    	});
-    	list.setBounds(74, 91, 101, 82);
-    	add(list);
-    	
-    	JLabel lblNewLabel = new JLabel("TaxCategoty List");
-    	lblNewLabel.setBounds(196, 30, 101, 12);
-    	add(lblNewLabel);
-    	
-    	JButton addButton = new JButton("Add");
-    	addButton.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    		currentFrame.getContentPane().removeAll();
-		    currentFrame.getContentPane().add(new TaxCategoryEditPanel(currentFrame, store, new TaxCategory(), true));
-		    currentFrame.getContentPane().revalidate();
-		
-    		}
-    	});
-    	addButton.setBounds(45, 216, 84, 20);
-    	add(addButton);
-    	
-    	editButton = new JButton("Edit");
-    	editButton.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    		currentFrame.getContentPane().removeAll();
-		    currentFrame.getContentPane().add(new TaxCategoryEditPanel(currentFrame, store, list.getSelectedValue(), false));
-		    currentFrame.getContentPane().revalidate();
-    		}
-    	});
-    	editButton.setBounds(168, 216, 84, 20);
-    	editButton.setEnabled(false);
-    	add(editButton);
-    	
-    	deleteButton = new JButton("Delete");
-    	deleteButton.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    		    store.removeTaxCategory(list.getSelectedValue());
-    		    listModel.removeElement(list.getSelectedValue());
-    		}
-    	});
-    	deleteButton.setBounds(301, 216, 84, 20);
-    	deleteButton.setEnabled(false);
-    	add(deleteButton);
-
+    public TaxCategoryListPanel(JFrame frame, Store store) {
+        JPanel body = Ui.page(this, "Tax categories");
+        DefaultListModel<TaxCategory> model = new DefaultListModel<>();
+        for (TaxCategory value : store.getTaxCategories().values()) model.addElement(value);
+        JList<TaxCategory> list = new JList<>(model);
+        body.add(new JScrollPane(list));
+        Ui.row(body, Ui.button("Add", () -> Ui.show(frame, new TaxCategoryEditPanel(frame, store, new TaxCategory(), true))),
+            Ui.button("Edit", () -> Ui.show(frame, new TaxCategoryEditPanel(frame, store, Ui.selected(list), false))),
+            Ui.button("Delete", () -> {
+                TaxCategory value = Ui.selected(list);
+                if (JOptionPane.showConfirmDialog(frame, "Delete selected record?", "Delete",
+                    JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
+                store.removeTaxCategory(value);
+                Ui.save(store);
+                Ui.show(frame, new TaxCategoryListPanel(frame, store));
+            }), Ui.button("Home", () -> Ui.show(frame, new HomePanel(store))));
     }
-
 }
+

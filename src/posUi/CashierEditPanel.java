@@ -1,157 +1,43 @@
 package posUi;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JButton;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
-import posPd.Store;
-import posPd.Cashier;
-import posPd.Person;
+import javax.swing.*;
+import posPd.*;
 
 public class CashierEditPanel extends JPanel {
-
     private static final long serialVersionUID = 1L;
-    private JTextField numberField;
-    private JTextField nameField;
-    private JTextField ssnField;
-    private JTextField addressField;
-    private JTextField cityField;
-    private JTextField stateField;
-    private JTextField zipField;
-    private JTextField phoneField;
-    private JTextField passwordField;
-    
-
-    /**
-     * Create the panel.
-     */
-    public CashierEditPanel(JFrame currentFrame, Store store, Cashier cashier, boolean isNew) {
-        
-        
-        setLayout(null);
-        
-        JLabel lblTitle = new JLabel("Edit Cashier");
-        lblTitle.setBounds(180, 10, 100, 20);
-        add(lblTitle);
-        
-        JLabel lblNumber = new JLabel("Number:");
-        lblNumber.setBounds(50, 40, 80, 20);
-        add(lblNumber);
-        
-        numberField = new JTextField();
-        numberField.setBounds(140, 40, 150, 20);
-        if (!isNew) numberField.setText(cashier.getNumber());
-        add(numberField);
-        
-        JLabel lblName = new JLabel("Name:");
-        lblName.setBounds(50, 70, 80, 20);
-        add(lblName);
-        
-        nameField = new JTextField();
-        nameField.setBounds(140, 70, 150, 20);
-        if (!isNew) nameField.setText(cashier.getPerson().getName());
-        add(nameField);
-        
-        JLabel lblSsn = new JLabel("SSN:");
-        lblSsn.setBounds(50, 100, 80, 20);
-        add(lblSsn);
-        
-        ssnField = new JTextField();
-        ssnField.setBounds(140, 100, 150, 20);
-        if (!isNew) ssnField.setText(cashier.getPerson().getSSN());
-        add(ssnField);
-        
-        JLabel lblAddress = new JLabel("Address:");
-        lblAddress.setBounds(50, 130, 80, 20);
-        add(lblAddress);
-        
-        addressField = new JTextField();
-        addressField.setBounds(140, 130, 150, 20);
-        if (!isNew) addressField.setText(cashier.getPerson().getAddress());
-        add(addressField);
-        
-        JLabel lblCity = new JLabel("City:");
-        lblCity.setBounds(50, 160, 80, 20);
-        add(lblCity);
-        
-        cityField = new JTextField();
-        cityField.setBounds(140, 160, 150, 20);
-        if (!isNew) cityField.setText(cashier.getPerson().getCity());
-        add(cityField);
-        
-        JLabel lblState = new JLabel("State:");
-        lblState.setBounds(50, 190, 80, 20);
-        add(lblState);
-        
-        stateField = new JTextField();
-        stateField.setBounds(140, 190, 150, 20);
-        if (!isNew) stateField.setText(cashier.getPerson().getState());
-        add(stateField);
-        
-        JLabel lblZip = new JLabel("ZIP:");
-        lblZip.setBounds(50, 220, 80, 20);
-        add(lblZip);
-        
-        zipField = new JTextField();
-        zipField.setBounds(140, 220, 150, 20);
-        if (!isNew) zipField.setText(cashier.getPerson().getZip());
-        add(zipField);
-        
-        JLabel lblPhone = new JLabel("Phone:");
-        lblPhone.setBounds(50, 250, 80, 20);
-        add(lblPhone);
-        
-        phoneField = new JTextField();
-        phoneField.setBounds(140, 250, 150, 20);
-        if (!isNew) phoneField.setText(cashier.getPerson().getPhone());
-        add(phoneField);
-        
-        JLabel lblPassword = new JLabel("Password:");
-        lblPassword.setBounds(50, 280, 80, 20);
-        add(lblPassword);
-        
-        passwordField = new JTextField();
-        passwordField.setBounds(140, 280, 150, 20);
-        if (!isNew) passwordField.setText(cashier.getPassword());
-        add(passwordField);
-        
-        JButton btnSave = new JButton("Save");
-        btnSave.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                cashier.setNumber(numberField.getText());
-                cashier.getPerson().setName(nameField.getText());
-                cashier.getPerson().setSSN(ssnField.getText());
-                cashier.getPerson().setAddress(addressField.getText());
-                cashier.getPerson().setCity(cityField.getText());
-                cashier.getPerson().setState(stateField.getText());
-                cashier.getPerson().setZip(zipField.getText());
-                cashier.getPerson().setPhone(phoneField.getText());
-                cashier.setPassword(passwordField.getText());
-                
-                if(isNew) {
-                    store.addCashier(cashier);
-                }
-                currentFrame.getContentPane().removeAll();
-                currentFrame.getContentPane().add(new CashierListPanel(currentFrame, store));
-                currentFrame.getContentPane().revalidate();
-            }
-        });
-        btnSave.setBounds(100, 320, 80, 25);
-        add(btnSave);
-        
-        JButton btnCancel = new JButton("Cancel");
-        btnCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                currentFrame.getContentPane().removeAll();
-                currentFrame.getContentPane().add(new CashierListPanel(currentFrame, store));
-                currentFrame.getContentPane().revalidate();
-            }
-        });
-        btnCancel.setBounds(200, 320, 80, 25);
-        add(btnCancel);
+    public CashierEditPanel(JFrame frame, Store store, Cashier cashier, boolean isNew) {
+        JPanel body = Ui.page(this, isNew ? "Add cashier" : "Edit cashier");
+        Person person = cashier.getPerson();
+        JTextField number = Ui.field(body, "Cashier number", cashier.getNumber());
+        number.setEditable(isNew);
+        JTextField name = Ui.field(body, "Name", person.getName());
+        JTextField identifier = Ui.field(body, "Fictional identifier (optional)", person.getSSN());
+        JTextField address = Ui.field(body, "Address (optional)", person.getAddress());
+        JTextField city = Ui.field(body, "City (optional)", person.getCity());
+        JTextField state = Ui.field(body, "State (optional)", person.getState());
+        JTextField zip = Ui.field(body, "ZIP (optional)", person.getZip());
+        JTextField phone = Ui.field(body, "Phone (optional)", person.getPhone());
+        JPasswordField password = new JPasswordField(24);
+        Ui.input(body, isNew ? "Password" : "New password (blank = keep)", password);
+        Ui.row(body, Ui.button("Save", () -> {
+            String id = Ui.required(number, "Cashier number");
+            Ui.unique(store.getCashiers(), id, cashier);
+            String newName = Ui.required(name, "Name");
+            char[] chars = password.getPassword();
+            String newPassword = new String(chars);
+            java.util.Arrays.fill(chars, '\0');
+            if (isNew && newPassword.isBlank()) throw new IllegalArgumentException("Password is required.");
+            if (!newPassword.isBlank()) cashier.setPassword(newPassword);
+            cashier.setNumber(id);
+            person.setName(newName);
+            person.setSSN(identifier.getText().trim());
+            person.setAddress(address.getText().trim());
+            person.setCity(city.getText().trim());
+            person.setState(state.getText().trim());
+            person.setZip(zip.getText().trim());
+            person.setPhone(phone.getText().trim());
+            store.addCashier(cashier);
+            Ui.save(store);
+            Ui.show(frame, new CashierListPanel(frame, store));
+        }), Ui.button("Cancel", () -> Ui.show(frame, new CashierListPanel(frame, store))));
     }
 }
