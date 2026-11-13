@@ -4,6 +4,8 @@ A Java Swing desktop application for a small retail checkout workflow. The appli
 
 The code is organized into separate presentation, domain, and data-management packages. It uses only the Java standard library.
 
+[See the checkout workflow](#checkout-workflow)
+
 ## Features
 
 - **Checkout:** Enter a UPC and quantity, remove items, apply a tax exemption, and view subtotal, tax, balance due, and change.
@@ -83,6 +85,49 @@ java -cp out posUi.PosFrame
 8. Use **Reports** to review sales and export CSV files.
 
 Check payments use a fictional nine-digit routing number, a fictional account number, and a check number. Credit payments take a card type, **four demo digits only**, and a non-expired `YYYY-MM-DD` expiration date. No processor or bank is contacted.
+
+## Checkout workflow
+
+**Cashier login → Checkout → Cash payment → Complete sale → Register reconciliation → Daily sales**
+
+The screenshots follow one sample transaction through the Java Swing app.
+
+### 1. Start a cashier session
+
+Select a cashier and register, enter $100.00 in starting cash, and log in.
+
+![Cashier login with register 1 and $100.00 in starting cash](docs/screenshots/01-cashier-login.png)
+
+### 2. Add items by UPC
+
+Add two turkey sandwiches and one Coke. The checkout shows a $6.15 subtotal and $0.36 in tax, for a total of $6.51.
+
+![Checkout with two sandwiches, one Coke, and a $6.51 total](docs/screenshots/02-checkout.png)
+
+### 3. Apply a cash payment
+
+Enter $10.00 in the cash payment form and select **Save**. The payment screen shows a zero balance and $3.49 in change.
+
+![Payment simulation showing $10.00 tendered and $3.49 in change](docs/screenshots/03-cash-payment.png)
+
+### 4. Record the sale
+
+Select **Payment Complete** to return to checkout. With the balance at $0.00, select **Complete Sale** to record the transaction.
+
+![Checkout showing a zero balance and the enabled Complete Sale button](docs/screenshots/04-complete-sale.png)
+
+### 5. Reconcile the register
+
+Count the cash in the drawer and compare it with the expected $106.51. The difference is $0.00, so the cashier can end the session.
+
+![Register reconciliation showing $106.51 counted and a zero difference](docs/screenshots/05-reconcile-register.png)
+
+### 6. Review the daily sales report
+
+Open **Reports → Daily sales** to see the completed transaction. Select **Export CSV** to save the report.
+
+![Daily sales report showing the completed $6.51 sale and the Export CSV button](docs/screenshots/06-daily-sales.png)
+
 
 ## Maintenance Behavior
 
